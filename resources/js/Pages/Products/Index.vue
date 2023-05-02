@@ -41,18 +41,25 @@
 
             const readFile = (value=> {
                 imagePreviewUrl.value = null;
-                const selectedFile = inputFile.value.files[0]
+                form.image = inputFile.value.files[0]
                 const validExtensions = ['.jpg', '.jpeg', '.png'];
-                const fileExtension = selectedFile.name.slice(selectedFile.name.lastIndexOf('.'));
+                const fileExtension = form.image.name.slice(form.image.name.lastIndexOf('.'));
                 if (!validExtensions.includes(fileExtension.toLowerCase())){
                     return ;
                 }else{
-                    imagePreviewUrl.value = URL.createObjectURL(selectedFile);
+                    imagePreviewUrl.value = URL.createObjectURL(form.image);
                 }
             })
 
             async function submit () {
-             
+                let formData = new FormData();
+                formData.append('image', form.image);
+                formData.append('data', JSON.stringify(form));
+                
+                await axios.post(route('products.create'), formData)
+                .then(res=> {
+                    
+                })
             }
 
 
@@ -90,7 +97,7 @@
                             </thead>
                             <tbody>
                                 <tr v-for="(item, key) in allProducts" :key="key">
-                                    <td class="py-2 px-4"><img :src="item.image" alt=""></td>
+                                    <td class="py-2 px-4"><img :src="item.image" width="200" alt=""></td>
                                     <td class="py-2 px-4">{{item.name}}</td>
                                     <td class="py-2 px-4">{{item.stock}}</td>
                                     <td>
@@ -158,7 +165,7 @@
 
                 </div>
 
-                <primary-button class="float-right mr-4 mt-4 mb-4" >
+                <primary-button class="float-right mr-4 mt-4 mb-4" @click="submit()">
                     Guardar
                 </primary-button>
                 <SecondaryButton class="float-right mr-4 mt-4 mb-4" @click="openModalCreateProduct = false">

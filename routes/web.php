@@ -36,7 +36,10 @@ Route::middleware([
 });
 
 
-Route::middleware(['auth:sanctum',config('jetstream.auth_session'),'verified',
-])->group(function () {
-    Route::get('/productos', [ProductController::class , 'index'])->name('products.index');
-});
+Route::middleware(['auth:sanctum',config('jetstream.auth_session'),'verified',])->prefix('productos')
+    ->group(function () {
+        Route::get('/', [ProductController::class , 'index'])->name('products.index');
+        Route::post('/', [ProductController::class , 'store'])->name('products.create');
+        Route::put('/', [ProductController::class , 'update'])->name('products.update');
+        Route::delete('/', [ProductController::class , 'destroy'])->name('products.delete');
+    });
