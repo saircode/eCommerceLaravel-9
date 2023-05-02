@@ -4,8 +4,18 @@ export default {
     components: {
         AppLayout
     },
-    setup() {
+    props: {
+        allProducts: {
+            type: Array,
+            required: true
+        }
+    },
+    setup(props) {
         
+        
+        return {
+
+        }
     },
 }
 </script>
