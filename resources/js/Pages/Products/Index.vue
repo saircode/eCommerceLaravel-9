@@ -1,11 +1,21 @@
 <script>
     import AppLayout from '@/Layouts/AppLayout.vue';
     import PrimaryButton from '@/Components/PrimaryButton.vue';
+    import SecondaryButton from '@/Components/SecondaryButton.vue';
+    import modal from "@/Components/Modal.vue";
+    import { reactive, ref } from 'vue';
+    import SectionTitle from '@/Components/SectionTitle.vue';
+    import TextInput from '@/Components/TextInput.vue';
+    import InputLabel from '@/Components/TextInput.vue';
     export default {
         name: 'ProductsIndex',
         components: {
             AppLayout,
-            PrimaryButton
+            PrimaryButton,
+            SecondaryButton,
+            modal,
+            SectionTitle,
+            TextInput,InputLabel
         },
         props: {
             allProducts: {
@@ -15,9 +25,40 @@
         },
         setup(props) {
 
+            let openModalCreateProduct = ref(false),
+                form = reactive({
+                    name: '',
+                    stock: '',
+                    description: '',
+                    image: ''
+                }),
+                inputFile=ref(null),
+                imagePreviewUrl=ref(null)
+            
+            const activateInputFile = (()=>{
+                inputFile.value.click();
+            }) 
+
+            const readFile = (value=> {
+                imagePreviewUrl.value = null;
+                const selectedFile = inputFile.value.files[0]
+                const validExtensions = ['.jpg', '.jpeg', '.png'];
+                const fileExtension = selectedFile.name.slice(selectedFile.name.lastIndexOf('.'));
+                if (!validExtensions.includes(fileExtension.toLowerCase())){
+                    return ;
+                }else{
+                    imagePreviewUrl.value = URL.createObjectURL(selectedFile);
+                }
+            })
+
+            async function submit () {
+             
+            }
+
 
             return {
-
+                openModalCreateProduct,
+                form,inputFile,activateInputFile,readFile,imagePreviewUrl,submit
             }
         },
     }
@@ -29,7 +70,7 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 Listado de productos
             </h2>
-            <PrimaryButton>
+            <PrimaryButton @click="openModalCreateProduct = true">
                 Nuevo
             </PrimaryButton>
         </template>
@@ -70,4 +111,61 @@
             </div>
         </div>
     </AppLayout>
+
+    <modal :show="openModalCreateProduct">
+            <section-title>
+                <template v-slot:title>
+                    Registrar producto
+                </template>
+            </section-title> 
+            <div class="py-12">
+                <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                   
+                    <label for="">Nombre del producto</label>
+                    <TextInput
+                        v-model="form.name"
+                        type="text"
+                        class="mt-1 block w-full mb-4"
+                        required
+                        autofocus
+                    />
+
+                    
+                    <label for="">Stock</label>
+                    <TextInput
+                        v-model="form.stock"
+                        type="number"
+                        class="mt-1 block w-full"
+                        required
+                    />
+
+
+                    <div class="mt-4" style="cursor: pointer; width: 200px;" @click="activateInputFile()">
+                        <label for="">Imagen del producto</label>
+                        <img :src="imagePreviewUrl?imagePreviewUrl:'/assets/images/product-no-image.png'" 
+                            alt="Imagen producto"
+                            width="200">
+                            <input style="display: none;"
+                                type="file"
+                                @change="readFile()"
+                                ref="inputFile"
+                            />
+                          
+                    </div>
+
+                    <label for="">Descripción</label>
+                    <textarea v-model="form.description" class="w-full form-textarea rounded-md shadow-sm" id="" cols="30" rows="4"></textarea>
+
+                </div>
+
+                <primary-button class="float-right mr-4 mt-4 mb-4" >
+                    Guardar
+                </primary-button>
+                <SecondaryButton class="float-right mr-4 mt-4 mb-4" @click="openModalCreateProduct = false">
+                    Cerrar
+                </SecondaryButton>
+                
+            </div>
+
+    </modal>
 </template>
