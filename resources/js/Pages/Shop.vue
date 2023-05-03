@@ -1,13 +1,24 @@
-<script setup>
+<script>
 import AppLayout from '@/Layouts/AppLayout.vue';
-
+export default {
+    name: 'Shop',
+    components: {
+        AppLayout
+    },
+    props: {
+        allProducts: {
+            type: Object,
+            required: true
+        }
+    }
+}
 </script>
 
 <template>
-    <AppLayout title="Dashboard">
+    <AppLayout title="Tienda">
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Dashboard
+                Tienda
             </h2>
         </template>
 
