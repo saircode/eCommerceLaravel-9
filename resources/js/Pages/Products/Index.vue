@@ -3,13 +3,13 @@
     import PrimaryButton from '@/Components/PrimaryButton.vue';
     import SecondaryButton from '@/Components/SecondaryButton.vue';
     import modal from "@/Components/Modal.vue";
-    import { reactive, ref } from 'vue';
+    import { computed, reactive, ref, watch } from 'vue';
     import SectionTitle from '@/Components/SectionTitle.vue';
     import TextInput from '@/Components/TextInput.vue';
     import InputLabel from '@/Components/TextInput.vue';
     import InputError from '@/Components/InputError.vue';
     import Pagination from '@/Components/Pagination.vue';
-    import { router } from '@inertiajs/vue3';
+    import { router , useForm } from '@inertiajs/vue3';
 
     export default {
         name: 'ProductsIndex',
@@ -31,7 +31,7 @@
         setup(props) {
       
             let openModalCreateProduct = ref(false),//->Determina si el modal de registro de productos esta abierto o no
-                form = reactive({
+                form = useForm({
                     name: '',
                     stock: '',
                     description: '',
@@ -39,7 +39,14 @@
                 }),
                 inputFile=ref(null),//-> referencia del input file para poder leer su valor
                 imagePreviewUrl=ref(null),//-> variable temporal para previsualizar la imagen que sube el usuario
-                errors = ref([])
+                errors = ref([]),
+                productSelected = ref([])
+            
+            const WhatImage = computed(()=> {
+                if(imagePreviewUrl.value && !productSelected.value) return imagePreviewUrl.value;
+                else if(productSelected.value) return productSelected.value.image;
+                else return '/assets/images/product-no-image.png';
+            })
                 
             const activateInputFile = (()=>{ //-> activa el input file que esta oculto .
                 inputFile.value.click();
@@ -82,11 +89,25 @@
                 })
             }
 
+            /**
+             * Cada vez que cambia el producto seleccionado ...
+             * el form toma los daros del mismo o se resetea si se trata de un nuevo resgistro
+             */
+            watch(() => productSelected.value, (currentValue, oldValue) => {
+                if(currentValue && currentValue.id) {
+                    form.name = currentValue.name;
+                    form.description = currentValue.description;
+                    form.stock = currentValue.stock;
+                    form.image = currentValue.image;
+                }else {
+                    form.reset()
+                }
+            })
 
             return {
                 openModalCreateProduct,
                 form,inputFile,activateInputFile,readFile,imagePreviewUrl,submit,
-                errors
+                errors,productSelected,WhatImage
             }
         }
     }
@@ -98,7 +119,7 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 Listado de productos
             </h2>
-            <PrimaryButton @click="openModalCreateProduct = true">
+            <PrimaryButton @click=" productSelected = null, openModalCreateProduct = true">
                 Nuevo
             </PrimaryButton>
         </template>
@@ -125,7 +146,7 @@
                                     <td class="py-2 px-4">{{item.stock}}</td>
                                     <td>
                                         <div class="flex space-x-2 mt-2">
-                                            <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                            <button @click="productSelected = item , openModalCreateProduct = true" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                                                 Editar
                                             </button>
                                             <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
@@ -150,7 +171,7 @@
     <modal :show="openModalCreateProduct">
             <section-title>
                 <template v-slot:title>
-                    Registrar producto
+                   <p v-text="productSelected ? 'Editar producto' : 'Registrar producto'"></p>  
                 </template>
             </section-title> 
             <div class="py-12">
@@ -180,7 +201,7 @@
 
                     <div class="mt-4" style="cursor: pointer; width: 200px;" @click="activateInputFile()">
                         <label for="">Imagen del producto</label>
-                        <img :src="imagePreviewUrl?imagePreviewUrl:'/assets/images/product-no-image.png'" 
+                        <img :src="WhatImage" 
                             alt="Imagen producto"
                             width="200">
                             <input style="display: none;"
