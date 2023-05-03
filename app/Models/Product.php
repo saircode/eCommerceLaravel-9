@@ -16,4 +16,9 @@ class Product extends Model
        'stock',
        'price'
     ];
+
+    public function shoppingcarts()
+    {
+        return $this->belongsToMany(ShoppingCart::class);
+    }
 }
