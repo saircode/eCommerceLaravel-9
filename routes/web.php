@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ProductController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -33,3 +34,16 @@ Route::middleware([
         return Inertia::render('Dashboard');
     })->name('dashboard');
 });
+
+
+Route::middleware(['auth:sanctum',config('jetstream.auth_session')])->prefix('productos')
+    ->group(function () {
+        Route::get('/', [ProductController::class , 'index'])->name('products.index');
+        Route::post('/', [ProductController::class , 'store'])->name('products.create');
+        Route::post('/img-product', [ProductController::class , 'storeImg'])->name('products.save.image');
+        Route::put('/', [ProductController::class, 'update'])->name("products.update");
+        Route::delete('/{id}', [ProductController::class , 'destroy'])->name('products.delete');
+    });
+
+// Route::resource('productos', ProductController::class)
+//     ->middleware(['auth:sanctum',config('jetstream.auth_session')]);
