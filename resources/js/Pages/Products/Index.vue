@@ -7,6 +7,8 @@
     import SectionTitle from '@/Components/SectionTitle.vue';
     import TextInput from '@/Components/TextInput.vue';
     import InputLabel from '@/Components/TextInput.vue';
+    import InputError from '@/Components/InputError.vue';
+
     export default {
         name: 'ProductsIndex',
         components: {
@@ -15,7 +17,8 @@
             SecondaryButton,
             modal,
             SectionTitle,
-            TextInput,InputLabel
+            TextInput,InputLabel,
+            InputError
         },
         props: {
             allProducts: {
@@ -24,33 +27,44 @@
             }
         },
         setup(props) {
-
-            let openModalCreateProduct = ref(false),
+      
+            let openModalCreateProduct = ref(false),//->Determina si el modal de registro de productos esta abierto o no
                 form = reactive({
                     name: '',
                     stock: '',
                     description: '',
                     image: ''
                 }),
-                inputFile=ref(null),
-                imagePreviewUrl=ref(null)
-            
-            const activateInputFile = (()=>{
+                inputFile=ref(null),//-> referencia del input file para poder leer su valor
+                imagePreviewUrl=ref(null),//-> variable temporal para previsualizar la imagen que sube el usuario
+                errors = ref([])
+                
+            const activateInputFile = (()=>{ //-> activa el input file que esta oculto .
                 inputFile.value.click();
             }) 
 
+            /**
+             * valido el tipo de archivo que se intenta subir y 
+             * lo almaceno en la variable correspondiente
+             * @param {*} value 
+             */
             const readFile = (value=> {
                 imagePreviewUrl.value = null;
                 form.image = inputFile.value.files[0]
                 const validExtensions = ['.jpg', '.jpeg', '.png'];
                 const fileExtension = form.image.name.slice(form.image.name.lastIndexOf('.'));
                 if (!validExtensions.includes(fileExtension.toLowerCase())){
+                    errors.value.image = ['Solo se permiten formatos .jpg .jpeg .png']
                     return ;
                 }else{
+                    errors.value.image = []
                     imagePreviewUrl.value = URL.createObjectURL(form.image);
                 }
             })
 
+            /**
+             * Se envia la data del nuevo producto al back 
+             */
             async function submit () {
                 let formData = new FormData();
                 formData.append('image', form.image);
@@ -58,16 +72,21 @@
                 
                 await axios.post(route('products.create'), formData)
                 .then(res=> {
-                    
+                    openModalCreateProduct.value = false;
+                    location.reload()
+                })
+                .catch(err=> {
+                    errors.value = err.response ? err.response.data : []
                 })
             }
 
 
             return {
                 openModalCreateProduct,
-                form,inputFile,activateInputFile,readFile,imagePreviewUrl,submit
+                form,inputFile,activateInputFile,readFile,imagePreviewUrl,submit,
+                errors
             }
-        },
+        }
     }
 </script>
 
@@ -132,19 +151,22 @@
                     <TextInput
                         v-model="form.name"
                         type="text"
-                        class="mt-1 block w-full mb-4"
+                        class=" block w-full"
                         required
                         autofocus
                     />
+                    <InputError :message="item" v-for="(item,key) in errors.name" :key="key" />
 
                     
-                    <label for="">Stock</label>
+                    <label class="mt-4      " for="">Stock</label>
                     <TextInput
                         v-model="form.stock"
                         type="number"
-                        class="mt-1 block w-full"
+                        class=" block w-full"
                         required
                     />
+                    <InputError  :message="item" v-for="(item,key) in errors.stock" :key="key" />
+
 
 
                     <div class="mt-4" style="cursor: pointer; width: 200px;" @click="activateInputFile()">
@@ -159,9 +181,12 @@
                             />
                           
                     </div>
+                    <InputError  :message="item" v-for="(item,key) in errors.image" :key="key" />
 
-                    <label for="">Descripción</label>
-                    <textarea v-model="form.description" class="w-full form-textarea rounded-md shadow-sm" id="" cols="30" rows="4"></textarea>
+
+                    <label class="mt-4" for="">Descripción</label>
+                    <textarea v-model="form.description" class="w-full form-textarea rounded-md shadow-sm " id="" cols="30" rows="4"></textarea>
+                    <InputError  :message="item" v-for="(item,key) in errors.description" :key="key" />
 
                 </div>
 
