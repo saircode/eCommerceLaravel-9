@@ -10,6 +10,8 @@
     import InputError from '@/Components/InputError.vue';
     import Pagination from '@/Components/Pagination.vue';
     import { router , useForm } from '@inertiajs/vue3';
+    import ConfirmationModal from "@/Components/ConfirmationModal.vue";
+
 
     export default {
         name: 'ProductsIndex',
@@ -20,7 +22,7 @@
             modal,
             SectionTitle,
             TextInput,InputLabel,
-            InputError,Pagination
+            InputError,Pagination,ConfirmationModal
         },
         props: {
             allProducts: {
@@ -39,7 +41,9 @@
                 }),
                 inputFile=ref(null),//-> referencia del input file para poder leer su valor
                 imagePreviewUrl=ref(null),//-> variable temporal para previsualizar la imagen que sube el usuario
-                errors = ref([]);
+                errors = ref([]),
+                ShowConfirmDelete = ref(false),
+                productToDelete = ref (null)
 
             const productSelected = ref(null)
             
@@ -126,6 +130,31 @@
             }
 
             /**
+             * Confirmar y eliminar un producto
+             * @param {*} product El producto a eliminar
+             * @param {*} action confirm || delete 
+             */
+            async function deleteProduct(product = productToDelete.value, action = null) {
+                productToDelete.value = product;
+                if(action === 'confirm'){
+                    ShowConfirmDelete.value = true;
+                    return;
+                }
+                else {
+                    ShowConfirmDelete.value = false;
+                }
+                
+
+                await axios.delete(route('products.delete', {id: product.id}))
+                .then(res=> {
+                    router.get(route('products.index'));
+                })
+                .catch (err=> {
+                    console.log(err.response.data)
+                }) 
+            }
+
+            /**
              * Cada vez que cambia el producto seleccionado ...
              * el form toma los daros del mismo o se resetea si se trata de un nuevo resgistro
              */
@@ -148,7 +177,8 @@
             return {
                 openModalCreateProduct,
                 form,inputFile,activateInputFile,readFile,imagePreviewUrl,submit,
-                errors,productSelected,WhatImage,update,saveImageAndFinish,formData
+                errors,productSelected,WhatImage,update,saveImageAndFinish,formData,
+                deleteProduct,ShowConfirmDelete,productToDelete
             }
         }
     }
@@ -190,7 +220,7 @@
                                             <button @click="productSelected = item" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                                                 Editar
                                             </button>
-                                            <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                                            <button @click="deleteProduct(item, 'confirm')" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
                                                 Eliminar
                                             </button>
                                         </div>
@@ -273,4 +303,18 @@
             </div>
 
     </modal>
+
+    <ConfirmationModal :show="ShowConfirmDelete">
+        <template v-slot:title>
+            Desea eliminar este producto?
+        </template>
+        <template v-slot:footer>
+            <secondary-button class="mr-2" @click="ShowConfirmDelete =false">
+                Cancelar
+            </secondary-button>
+            <PrimaryButton @click="deleteProduct()">
+                Eliminar
+            </PrimaryButton>
+        </template>
+    </ConfirmationModal>
 </template>

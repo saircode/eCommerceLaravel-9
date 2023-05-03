@@ -42,7 +42,7 @@ Route::middleware(['auth:sanctum',config('jetstream.auth_session')])->prefix('pr
         Route::post('/', [ProductController::class , 'store'])->name('products.create');
         Route::post('/img-product', [ProductController::class , 'storeImg'])->name('products.save.image');
         Route::put('/', [ProductController::class, 'update'])->name("products.update");
-        Route::delete('/', [ProductController::class , 'destroy'])->name('products.delete');
+        Route::delete('/{id}', [ProductController::class , 'destroy'])->name('products.delete');
     });
 
 // Route::resource('productos', ProductController::class)

@@ -99,5 +99,16 @@ class ProductController extends Controller
         return $fields;
     }
     
-    public function destroy(){}
+    public function destroy($id){
+        if($id){
+            $product = Product::find($id);
+            if(!$product) return response( 'Producto no encontrado' , 404) ;
+
+            Product::destroy($id);
+        }else{
+            return response( 'falta id del producto para poder procesar la solicitur', 422);
+        }
+
+        return response (true , 200);
+    }
 }
