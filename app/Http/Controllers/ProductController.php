@@ -24,9 +24,64 @@ class ProductController extends Controller
      * Registro los productos
      */
     public function store(Request $request){
+        $validate = self::validateData($request->all());
+        if ($validate->fails()) {
+            return response()->json($validate->errors(), 422);
+        }
 
-        $data = json_decode($request->data , true) ;
+        $product = new Product($request->all());
+        $product->save();
 
+        return response([
+            "product_id" => $product->id
+        ], 200);
+    }
+
+    public function storeImg(Request $request) {
+        if($request->image && $request->product_id){
+            $product = Product::find($request->product_id);
+
+            $file = $request->file("image");
+
+            //-> si se envio la variable pero no con un archivo 
+            if(!$file) return response ('no se encontro la imagen' , 200);
+
+            $fileName   =  time() .'.'.$file->extension();
+            $date =  date("Y-m-d");
+            $folder = "app/public/uploads/images/" . $date. "/";
+
+            if (!is_dir( storage_path( $folder) )) {
+                mkdir( storage_path($folder) , 0777, true);
+            }
+
+            $file->move(storage_path($folder ), ($fileName) ); 
+
+            $product->image = "/storage/uploads/images/$date/$fileName";
+            $product->save();
+        }
+    }
+
+    public function update(Request $request){
+        $validate = self::validateData($request->all());
+        if ($validate->fails()) {
+            return response()->json($validate->errors(), 422);
+        }
+
+        $product = Product::find($request->id);
+        if(!$product){
+            return response ('Producto no encontrado.' , 404);
+        }
+
+        $product->update($request->all());
+
+        return response(['product_id'=>$product->id],  200);
+    }
+
+    /**
+     * Valida campos obligatorios y sus tipos
+     */
+    static public function validateData($data) {
+        
         $fields = Validator::make($data, [
             "name" => "required|string|max:100",
             "stock" => "required|numeric",
@@ -41,35 +96,8 @@ class ProductController extends Controller
             'description.string' => 'Solo se permiten letras y números.'
         ]);
 
-        //>> Respuesta con error por campo ausente o erroneo
-        if ($fields->fails()) {
-            return response()->json($fields->errors(), 422);
-        }
-
-
-        $product = new Product($data);
-
-        if($request->image){
-            $file = $request->file("image");
-            $fileName   =  time() .'.'.$file->extension();
-            $date =  date("Y-m-d");
-            $folder = "app/public/uploads/images/" . $date. "/";
-
-            if (!is_dir( storage_path( $folder) )) {
-                mkdir( storage_path($folder) , 0777, true);
-            }
-
-            $file->move(storage_path($folder ), ($fileName) ); 
-
-            $product->image = "/storage/uploads/images/$date/$fileName";
-        }
-
-        $product->save();
-
-        return response(true, 200);
+        return $fields;
     }
-
-    public function update(){}
     
     public function destroy(){}
 }

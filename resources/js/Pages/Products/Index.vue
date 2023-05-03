@@ -14,7 +14,7 @@
     export default {
         name: 'ProductsIndex',
         components: {
-            AppLayout,router,
+            AppLayout,
             PrimaryButton,
             SecondaryButton,
             modal,
@@ -24,7 +24,7 @@
         },
         props: {
             allProducts: {
-                type: Array,
+                type: Object  ,
                 required: true
             }
         },
@@ -39,13 +39,24 @@
                 }),
                 inputFile=ref(null),//-> referencia del input file para poder leer su valor
                 imagePreviewUrl=ref(null),//-> variable temporal para previsualizar la imagen que sube el usuario
-                errors = ref([]),
-                productSelected = ref([])
+                errors = ref([]);
+
+            const productSelected = ref(null)
             
             const WhatImage = computed(()=> {
-                if(imagePreviewUrl.value && !productSelected.value) return imagePreviewUrl.value;
-                else if(productSelected.value) return productSelected.value.image;
-                else return '/assets/images/product-no-image.png';
+                if(imagePreviewUrl.value) return imagePreviewUrl.value;
+                else if(productSelected.value && productSelected.value.image) return productSelected.value.image;
+                else
+                return '/assets/images/product-no-image.png';
+            })
+
+            const formData = computed(()=>{
+                return {
+                    name: form.name,
+                    stock: form.stock,
+                    description: form.description,
+                    id: form.id
+                }
             })
                 
             const activateInputFile = (()=>{ //-> activa el input file que esta oculto .
@@ -68,6 +79,8 @@
                 }else{
                     errors.value.image = []
                     imagePreviewUrl.value = URL.createObjectURL(form.image);
+
+                    if(productSelected.value) productSelected.value.image =null;
                 }
             })
 
@@ -75,17 +88,40 @@
              * Se envia la data del nuevo producto al back 
              */
             async function submit () {
-                let formData = new FormData();
-                formData.append('image', form.image);
-                formData.append('data', JSON.stringify(form));
-                
-                await axios.post(route('products.create'), formData)
+                await axios.post(route('products.create'), formData.value)
+                .then(res=> {
+                    saveImageAndFinish(res.data.product_id);
+                })
+                .catch(err=> {
+                    errors.value =err.response.data 
+                })
+            }
+
+            async function update () {
+                await axios.put(route('products.update'), formData.value)
+                .then(res=> {
+                    saveImageAndFinish(res.data.product_id);
+                })
+                .catch(err=> {
+                    errors.value =err.response.data 
+                })
+            }
+
+            async function saveImageAndFinish(product_id) {
+                let formdata = new FormData();
+                formdata.append('image', form.image);
+                formdata.append('product_id', product_id);
+                await axios.post(route('products.save.image'), formdata,{
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                })
                 .then(res=> {
                     openModalCreateProduct.value = false;
                     router.get(route('products.index'));
                 })
                 .catch(err=> {
-                    errors.value = err.response ? err.response.data : []
+                    errors.value =err.response.data 
                 })
             }
 
@@ -99,6 +135,11 @@
                     form.description = currentValue.description;
                     form.stock = currentValue.stock;
                     form.image = currentValue.image;
+                    form.id = currentValue.id
+
+                    setTimeout(() => {
+                        openModalCreateProduct.value = true
+                    }, 100);
                 }else {
                     form.reset()
                 }
@@ -107,7 +148,7 @@
             return {
                 openModalCreateProduct,
                 form,inputFile,activateInputFile,readFile,imagePreviewUrl,submit,
-                errors,productSelected,WhatImage
+                errors,productSelected,WhatImage,update,saveImageAndFinish,formData
             }
         }
     }
@@ -140,13 +181,13 @@
                             </thead>
                             <tbody>
                                 <tr v-for="(item, key) in allProducts.data" :key="key">
-                                    <td class="py-2 px-4"><img :src="item.image !== '' ? item.image : '/assets/images/product-no-image.png'" width="200" alt=""></td>
+                                    <td class="py-2 px-4"><img :src="item.image !== '' && item.image !== null ? item.image : '/assets/images/product-no-image.png'" width="200" alt=""></td>
                                     <td class="py-2 px-4">{{item.name}}</td>
                                     <td class="py-2 px-4">{{item.description}}</td>
                                     <td class="py-2 px-4">{{item.stock}}</td>
                                     <td>
                                         <div class="flex space-x-2 mt-2">
-                                            <button @click="productSelected = item , openModalCreateProduct = true" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                                            <button @click="productSelected = item" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                                                 Editar
                                             </button>
                                             <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
@@ -220,10 +261,12 @@
 
                 </div>
 
-                <primary-button class="float-right mr-4 mt-4 mb-4" @click="submit()">
+                <primary-button class="float-right mr-4 mt-4 mb-4" 
+                    @click="productSelected ? update() : submit()">
                     Guardar
                 </primary-button>
-                <SecondaryButton class="float-right mr-4 mt-4 mb-4" @click="openModalCreateProduct = false">
+                <SecondaryButton class="float-right mr-4 mt-4 mb-4" 
+                    @click="openModalCreateProduct = false">
                     Cerrar
                 </SecondaryButton>
                 

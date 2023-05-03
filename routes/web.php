@@ -36,10 +36,14 @@ Route::middleware([
 });
 
 
-Route::middleware(['auth:sanctum',config('jetstream.auth_session'),'verified',])->prefix('productos')
+Route::middleware(['auth:sanctum',config('jetstream.auth_session')])->prefix('productos')
     ->group(function () {
         Route::get('/', [ProductController::class , 'index'])->name('products.index');
         Route::post('/', [ProductController::class , 'store'])->name('products.create');
-        Route::put('/', [ProductController::class , 'update'])->name('products.update');
+        Route::post('/img-product', [ProductController::class , 'storeImg'])->name('products.save.image');
+        Route::put('/', [ProductController::class, 'update'])->name("products.update");
         Route::delete('/', [ProductController::class , 'destroy'])->name('products.delete');
     });
+
+// Route::resource('productos', ProductController::class)
+//     ->middleware(['auth:sanctum',config('jetstream.auth_session')]);
