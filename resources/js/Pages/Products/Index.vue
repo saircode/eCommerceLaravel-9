@@ -105,19 +105,21 @@
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
                     <div class="relative sm:justify-left sm:items-center min-h-screen bg-dots-darker">
-                        <table class="border w-full ">
+                        <table class="border table-auto w-full">
                             <thead>
                                 <tr>
                                     <th class="bg-gray-200 text-left py-2 px-4">Imagen</th>
                                     <th class="bg-gray-200 text-left py-2 px-4">Nombre</th>
+                                    <th class="bg-gray-200 text-left py-2 px-4">Descripcion</th>
                                     <th class="bg-gray-200 text-left py-2 px-4">Stock</th>
                                     <th class="bg-gray-200 text-left py-2 px-4">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(item, key) in allProducts" :key="key">
+                                <tr v-for="(item, key) in allProducts.data" :key="key">
                                     <td class="py-2 px-4"><img :src="item.image" width="200" alt=""></td>
                                     <td class="py-2 px-4">{{item.name}}</td>
+                                    <td class="py-2 px-4">{{item.description}}</td>
                                     <td class="py-2 px-4">{{item.stock}}</td>
                                     <td>
                                         <div class="flex space-x-2 mt-2">

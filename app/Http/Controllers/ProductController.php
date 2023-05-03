@@ -12,8 +12,8 @@ class ProductController extends Controller
     /**
      * pagina lista productos
      */
-    public function index(){
-        $allProducts = Product::latest()->get();
+    public function index(Request $request){
+        $allProducts = Product::latest()->paginate(25);
 
         return Inertia::render('Products/Index', [
             'allProducts'=>$allProducts
