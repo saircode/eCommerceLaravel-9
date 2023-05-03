@@ -8,17 +8,19 @@
     import TextInput from '@/Components/TextInput.vue';
     import InputLabel from '@/Components/TextInput.vue';
     import InputError from '@/Components/InputError.vue';
+    import Pagination from '@/Components/Pagination.vue';
+    import { router } from '@inertiajs/vue3';
 
     export default {
         name: 'ProductsIndex',
         components: {
-            AppLayout,
+            AppLayout,router,
             PrimaryButton,
             SecondaryButton,
             modal,
             SectionTitle,
             TextInput,InputLabel,
-            InputError
+            InputError,Pagination
         },
         props: {
             allProducts: {
@@ -73,7 +75,7 @@
                 await axios.post(route('products.create'), formData)
                 .then(res=> {
                     openModalCreateProduct.value = false;
-                    location.reload()
+                    router.get(route('products.index'));
                 })
                 .catch(err=> {
                     errors.value = err.response ? err.response.data : []
@@ -117,7 +119,7 @@
                             </thead>
                             <tbody>
                                 <tr v-for="(item, key) in allProducts.data" :key="key">
-                                    <td class="py-2 px-4"><img :src="item.image" width="200" alt=""></td>
+                                    <td class="py-2 px-4"><img :src="item.image !== '' ? item.image : '/assets/images/product-no-image.png'" width="200" alt=""></td>
                                     <td class="py-2 px-4">{{item.name}}</td>
                                     <td class="py-2 px-4">{{item.description}}</td>
                                     <td class="py-2 px-4">{{item.stock}}</td>
@@ -134,6 +136,11 @@
                                 </tr>
                             </tbody>
                         </table>
+
+                        
+                    </div>
+                    <div class="flex justify-center items-center mt-4 mb-4">
+                        <Pagination :links="allProducts.links"></Pagination>
                     </div>
                 </div>
             </div>
@@ -160,7 +167,7 @@
                     <InputError :message="item" v-for="(item,key) in errors.name" :key="key" />
 
                     
-                    <label class="mt-4      " for="">Stock</label>
+                    <label class="mt-4" for="">Stock</label>
                     <TextInput
                         v-model="form.stock"
                         type="number"
