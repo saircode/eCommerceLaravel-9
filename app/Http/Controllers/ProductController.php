@@ -85,7 +85,8 @@ class ProductController extends Controller
         $fields = Validator::make($data, [
             "name" => "required|string|max:100",
             "stock" => "required|numeric",
-            "description"=> 'string|max:250'
+            "description"=> 'string|max:250',
+            "price" =>"required|numeric",
         ], [
             'name.required' => 'Ingresa el nombre del producto',
             'name.string' => 'El nombre del producto contiene caracteres no validos.',
@@ -93,7 +94,9 @@ class ProductController extends Controller
             'stock.required' => 'Ingresa la cantidad existente del producto',
             'stock.numeric' => 'Este valor debe ser un número',
             'description.max'=> 'Máximo 250 caracteres.',
-            'description.string' => 'Solo se permiten letras y números.'
+            'description.string' => 'Solo se permiten letras y números.',
+            'price.required' => 'Ingresa el precio de venta del producto',
+            'price.numeric' => 'Este valor debe ser un número',
         ]);
 
         return $fields;

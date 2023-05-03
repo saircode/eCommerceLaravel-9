@@ -36,6 +36,7 @@
                 form = useForm({
                     name: '',
                     stock: '',
+                    price: '',
                     description: '',
                     image: ''
                 }),
@@ -58,6 +59,7 @@
                 return {
                     name: form.name,
                     stock: form.stock,
+                    price: form.price,
                     description: form.description,
                     id: form.id
                 }
@@ -154,6 +156,13 @@
                 }) 
             }
 
+            const formatCoin = (number =>{
+                const options = { style: "currency", currency: "COP" };
+                const COPformat = number.toLocaleString("es-CO", options);
+
+                return COPformat; // "COP 1.234.567,89"
+            })
+
             /**
              * Cada vez que cambia el producto seleccionado ...
              * el form toma los daros del mismo o se resetea si se trata de un nuevo resgistro
@@ -163,6 +172,7 @@
                     form.name = currentValue.name;
                     form.description = currentValue.description;
                     form.stock = currentValue.stock;
+                    form.price = currentValue.price;
                     form.image = currentValue.image;
                     form.id = currentValue.id
 
@@ -178,7 +188,7 @@
                 openModalCreateProduct,
                 form,inputFile,activateInputFile,readFile,imagePreviewUrl,submit,
                 errors,productSelected,WhatImage,update,saveImageAndFinish,formData,
-                deleteProduct,ShowConfirmDelete,productToDelete
+                deleteProduct,ShowConfirmDelete,productToDelete,formatCoin
             }
         }
     }
@@ -206,6 +216,7 @@
                                     <th class="bg-gray-200 text-left py-2 px-4">Nombre</th>
                                     <th class="bg-gray-200 text-left py-2 px-4">Descripcion</th>
                                     <th class="bg-gray-200 text-left py-2 px-4">Stock</th>
+                                    <th class="bg-gray-200 text-left py-2 px-4">Precio</th>
                                     <th class="bg-gray-200 text-left py-2 px-4">Acciones</th>
                                 </tr>
                             </thead>
@@ -215,6 +226,7 @@
                                     <td class="py-2 px-4">{{item.name}}</td>
                                     <td class="py-2 px-4">{{item.description}}</td>
                                     <td class="py-2 px-4">{{item.stock}}</td>
+                                    <td class="py-2 px-4">{{formatCoin(item.price)}}</td>
                                     <td>
                                         <div class="flex space-x-2 mt-2">
                                             <button @click="productSelected = item" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
@@ -268,6 +280,15 @@
                     />
                     <InputError  :message="item" v-for="(item,key) in errors.stock" :key="key" />
 
+
+                    <label class="mt-4" for="">Precio</label>
+                    <TextInput
+                        v-model="form.price"
+                        type="number"
+                        class=" block w-full"
+                        required
+                    />
+                    <InputError  :message="item" v-for="(item,key) in errors.price" :key="key" />
 
 
                     <div class="mt-4" style="cursor: pointer; width: 200px;" @click="activateInputFile()">
