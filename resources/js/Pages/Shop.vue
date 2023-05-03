@@ -3,15 +3,27 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import Pagination from '@/Components/Pagination.vue';
+import SvgIcon from '@jamescoyle/vue-icon'
+import { mdiCartVariant } from '@mdi/js'
+import { ref } from 'vue';
 export default {
     name: 'Shop',
     components: {
-        AppLayout,PrimaryButton,SecondaryButton,Pagination
+        AppLayout,PrimaryButton,SecondaryButton,Pagination,
+        SvgIcon
     },
     props: {
         allProducts: {
             type: Object,
             required: true
+        }
+    },
+
+    setup () {
+        let iconCart = ref(mdiCartVariant)
+
+        return {
+            iconCart
         }
     }
 }
@@ -21,8 +33,15 @@ export default {
     <AppLayout title="Tienda">
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Tienda
+                Tu carrito 
             </h2>
+            <button class="flex items-center bg-blue-600 text-white px-4 py-2 rounded-md">
+                <svg-icon type="mdi" :path="iconCart"></svg-icon>
+                <span class="text-lg font-bold ml-2">10</span>
+            </button>
+
+
+
         </template>
 
         <div class="py-12">
@@ -37,7 +56,7 @@ export default {
                                 {{ item.description }}
                             </p>
                                 <PrimaryButton class="mr-2 mt-2">
-                                    Comprar ahora
+                                    Agregar al carrito
                                 </PrimaryButton>
                                 <SecondaryButton>
                                     Ver mas
