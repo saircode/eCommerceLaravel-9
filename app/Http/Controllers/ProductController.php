@@ -109,7 +109,7 @@ class ProductController extends Controller
 
             Product::destroy($id);
         }else{
-            return response( 'falta id del producto para poder procesar la solicitur', 422);
+            return response( 'falta id del producto para poder procesar la solicitud', 422);
         }
 
         return response (true , 200);
