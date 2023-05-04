@@ -166,7 +166,7 @@ export default {
 
             await axios.post(route('purchase.store'), transaction)
             .then(res=>{
-                router.get(route('shop.index'));
+                router.get(route('purchase.index'));
             })
         }
 

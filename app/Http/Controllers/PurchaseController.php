@@ -8,6 +8,7 @@ use App\Models\ShoppingCart;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class PurchaseController extends Controller
 {
@@ -18,17 +19,11 @@ class PurchaseController extends Controller
      */
     public function index()
     {
-        //
-    }
+        $purchases = purchase::where('user_id' , Auth::user()->id)->latest()->get();
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
+        return Inertia::render('Purchases', [
+            'purchases'=> $purchases
+        ]);
     }
 
     /**
