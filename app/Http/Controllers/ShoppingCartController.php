@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\ShoppingCart;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class ShoppingCartController extends Controller
 {
@@ -14,7 +17,13 @@ class ShoppingCartController extends Controller
      */
     public function index()
     {
-        //
+        $userId = Auth::user()->id;
+        $cart = ShoppingCart::where('user_id', $userId)
+        ->join('products', 'products.id', 'shopping_carts.product_id')
+        ->latest('shopping_carts.created_at')
+        ->get();
+
+        return response ($cart, 200);
     }
 
     /**
@@ -35,7 +44,20 @@ class ShoppingCartController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $fields = Validator::make($request->all(), [
+            "product_id" => "required|numeric",
+            "quantity" => "required|numeric"
+        ]);
+
+        if ($fields->fails()) {
+            return response()->json($fields->errors(), 422);
+        }
+
+        $shoppingCart = new ShoppingCart ($request->all());
+        $shoppingCart->user_id = Auth::user()->id;
+        $shoppingCart->save();
+
+        return response (true ,  200);
     }
 
     /**

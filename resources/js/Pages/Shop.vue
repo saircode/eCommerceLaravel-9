@@ -5,7 +5,7 @@ import SecondaryButton from '@/Components/SecondaryButton.vue';
 import Pagination from '@/Components/Pagination.vue';
 import SvgIcon from '@jamescoyle/vue-icon'
 import { mdiCartVariant } from '@mdi/js'
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 export default {
     name: 'Shop',
     components: {
@@ -20,10 +20,42 @@ export default {
     },
 
     setup () {
-        let iconCart = ref(mdiCartVariant)
+        onMounted(()=> {
+            getCart();
+        })
+
+        let iconCart = ref(mdiCartVariant),
+            userCart = ref([])
+
+        async function addToCart(product_id){
+            await axios.post(route('shoppingcart.add') , {
+                product_id : product_id,
+                quantity: 1
+            })
+            .then(res=> {
+                getCart() 
+            })
+        }
+
+        async function getCart() {
+            await axios.get(route('shoppingcart.index'))
+            .then(res=> {
+                userCart.value = res.data;
+            })
+        }
+
+        function productOnCart(product_id){
+            let result = false;
+            userCart.value.map(item=> {
+                if(item.product_id === product_id) result = true;
+            })
+
+            return result;
+        } 
 
         return {
-            iconCart
+            iconCart,addToCart,getCart,userCart,
+            productOnCart
         }
     }
 }
@@ -37,7 +69,7 @@ export default {
             </h2>
             <button class="flex items-center bg-blue-600 text-white px-4 py-2 rounded-md">
                 <svg-icon type="mdi" :path="iconCart"></svg-icon>
-                <span class="text-lg font-bold ml-2">10</span>
+                <span class="text-lg font-bold ml-2">{{ userCart.length }}</span>
             </button>
 
 
@@ -55,7 +87,8 @@ export default {
                             <p class="text-gray-600 mt-2">
                                 {{ item.description }}
                             </p>
-                                <PrimaryButton class="mr-2 mt-2">
+                                <PrimaryButton :disabled="productOnCart(item.id)" 
+                                    @click="addToCart(item.id)" class="mr-2 mt-2">
                                     Agregar al carrito
                                 </PrimaryButton>
                                 <SecondaryButton>
