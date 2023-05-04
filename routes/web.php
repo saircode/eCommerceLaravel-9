@@ -32,7 +32,7 @@ Route::middleware([
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
-    Route::get('/tienda', [ShopController::class, 'index'] )->name('dashboard');
+    Route::get('/tienda', [ShopController::class, 'index'] )->name('shop.index');
 });
 
 
