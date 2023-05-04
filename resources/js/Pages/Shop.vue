@@ -8,7 +8,7 @@ import TextInput from '@/Components/TextInput.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import SvgIcon from '@jamescoyle/vue-icon'
 import { mdiCartVariant } from '@mdi/js'
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import modal from "@/Components/Modal.vue";
 import { usePage , router } from '@inertiajs/vue3';
 
@@ -56,7 +56,16 @@ export default {
                 phonenumber: '',
                 city: '',
                 region: ''
-            })
+            });
+        
+        /**
+         * Cada que el usuario va a la pasarela esta info se pierde
+         * por esa razon la almacenare en el localstoragepara guardarla en la DB
+         * en caso de que sea un transaccion exitosa
+         */
+        watch(() =>[ wompi.address, wompi.region, wompi.city, wompi.phonenumber], (currentValue, oldValue) => {
+           localStorage.setItem('dataToRegisterPurchase', JSON.stringify(wompi))
+        })
 
         async function addToCart(product_id){
             await axios.post(route('shoppingcart.add') , {
@@ -135,8 +144,30 @@ export default {
         })
 
 
+        /**
+         * Solo se puede ir a pagar cuando los datos han sido 
+         * recolectados correctamente
+         */
+        const canGoToPay = computed(()=> {
+            if(!wompi.address || !wompi.region || !wompi.city || !wompi.phonenumber) return false;
+
+            return true;
+        })
+
+
         async function savePurchase(transaction) {
-            
+            let dataToRegisterPurchase = localStorage.getItem('dataToRegisterPurchase');
+                dataToRegisterPurchase = JSON.parse(dataToRegisterPurchase);
+
+            transaction.addres = dataToRegisterPurchase.address; 
+            transaction.region = dataToRegisterPurchase.region;
+            transaction.city = dataToRegisterPurchase.city; 
+            transaction.phonenumber = dataToRegisterPurchase.phonenumber
+
+            await axios.post(route('purchase.store'), transaction)
+            .then(res=>{
+                router.get(route('purchase.index'));
+            })
         }
 
 
@@ -144,7 +175,7 @@ export default {
             iconCart,addToCart,getCart,userCart,
             productOnCart,showModalCart,formatCoin,RemoveProductCart,
             total,wompi,amountInCents,openModalShippingInfo,showModalShippingInfo,
-            verficateTransaction,randReference,savePurchase
+            verficateTransaction,randReference,savePurchase,canGoToPay
         }
     }
 }
@@ -178,7 +209,7 @@ export default {
                                     Agregar al carrito
                                 </PrimaryButton>
                                 <SecondaryButton>
-                                    Ver mas
+                                    {{ formatCoin(item.price) }}
                                 </SecondaryButton>
                             </div>
                         </div>
@@ -306,7 +337,7 @@ export default {
                     <input type="hidden" name="shipping-address:region" :value="wompi.region" />
                     
                 
-                    <primary-button type="submit" class="float-right mt-4 mb-4" >
+                    <primary-button :disabled="!canGoToPay" type="submit" class="float-right mt-4 mb-4" >
                         Ir a pagar 
                     </primary-button>
                     <SecondaryButton @click="showModalShippingInfo = false" class="float-right mr-4 mt-4 mb-4">

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\ShoppingCartController;
 use Illuminate\Foundation\Application;
@@ -27,14 +28,10 @@ Route::get('/', function () {
     ]);
 });
 
-Route::middleware([
-    'auth:sanctum',
-    config('jetstream.auth_session'),
-    'verified',
-])->group(function () {
-    Route::get('/tienda', [ShopController::class, 'index'] )->name('shop.index');
+Route::middleware(['auth:sanctum',config('jetstream.auth_session'),'verified',
+])->prefix('tienda')->group(function () {
+    Route::get('/', [ShopController::class, 'index'] )->name('shop.index');
 });
-
 
 Route::middleware(['auth:sanctum',config('jetstream.auth_session')])->prefix('productos')
 ->group(function () {
@@ -51,4 +48,10 @@ Route::middleware(['auth:sanctum',config('jetstream.auth_session')])->prefix('ca
     Route::get('/', [ShoppingCartController::class , 'index'])->name('shoppingcart.index');
     Route::post('/', [ShoppingCartController::class , 'store'])->name('shoppingcart.add');
     Route::delete('/{id}', [ShoppingCartController::class , 'destroy'])->name('shoppingcart.delete');
+});
+
+Route::middleware(['auth:sanctum',config('jetstream.auth_session'),'verified',
+])->prefix('compras')->group(function () {
+    Route::get('/', [PurchaseController::class, 'index'] )->name('purchase.index');
+    Route::post('/', [PurchaseController::class, 'store'] )->name('purchase.store');
 });
