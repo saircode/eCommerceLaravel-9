@@ -48,7 +48,7 @@
             </tr>
             @foreach($purchase->products as $product)
                 <?php
-                    $priceFormat = "$". number_format($price);
+                    $priceFormat = "$". number_format($product->price);
                 ?>
                 <tr>
                     <td>{{ $product->name }}</td>
