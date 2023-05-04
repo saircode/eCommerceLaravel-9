@@ -8,7 +8,7 @@ import TextInput from '@/Components/TextInput.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import SvgIcon from '@jamescoyle/vue-icon'
 import { mdiCartVariant } from '@mdi/js'
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import modal from "@/Components/Modal.vue";
 import { usePage , router } from '@inertiajs/vue3';
 
@@ -56,7 +56,16 @@ export default {
                 phonenumber: '',
                 city: '',
                 region: ''
-            })
+            });
+        
+        /**
+         * Cada que el usuario va a la pasarela esta info se pierde
+         * por esa razon la almacenare en el localstoragepara guardarla en la DB
+         * en caso de que sea un transaccion exitosa
+         */
+        watch(() =>[ wompi.address, wompi.region, wompi.city, wompi.phonenumber], (currentValue, oldValue) => {
+           localStorage.setItem('dataToRegisterPurchase', JSON.stringify(wompi))
+        })
 
         async function addToCart(product_id){
             await axios.post(route('shoppingcart.add') , {
@@ -147,7 +156,18 @@ export default {
 
 
         async function savePurchase(transaction) {
+            let dataToRegisterPurchase = localStorage.getItem('dataToRegisterPurchase');
+                dataToRegisterPurchase = JSON.parse(dataToRegisterPurchase);
 
+            transaction.addres = dataToRegisterPurchase.address; 
+            transaction.region = dataToRegisterPurchase.region;
+            transaction.city = dataToRegisterPurchase.city; 
+            transaction.phonenumber = dataToRegisterPurchase.phonenumber
+
+            await axios.post(route('purchase.store'), transaction)
+            .then(res=>{
+                router.get(route('shop.index'));
+            })
         }
 
 
