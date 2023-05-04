@@ -57,6 +57,11 @@ const logout = () => {
                                     Productos
                                 </NavLink>
                             </div>
+                            <div v-if="$page.props.auth.userRol === 'admin'" class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                                <NavLink :href="route('users.index')" :active="route().current('users.index')">
+                                    Usuarios
+                                </NavLink>
+                            </div>
                             <div v-if="$page.props.auth.userRol === 'client'" class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
                                 <NavLink :href="route('purchase.index')" :active="route().current('purchase.index')">
                                     Mis compras

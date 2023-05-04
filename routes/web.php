@@ -55,3 +55,9 @@ Route::middleware(['auth:sanctum',config('jetstream.auth_session'),'verified',
     Route::get('/', [PurchaseController::class, 'index'] )->name('purchase.index');
     Route::post('/', [PurchaseController::class, 'store'] )->name('purchase.store');
 });
+
+Route::middleware(['auth:sanctum',config('jetstream.auth_session'),'verified',
+])->prefix('usuarios')->group(function () {
+    Route::get('/', [PurchaseController::class, 'index'] )->name('users.index');
+    Route::post('/', [PurchaseController::class, 'store'] )->name('users.store');
+});
