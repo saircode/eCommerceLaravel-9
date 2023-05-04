@@ -27,12 +27,9 @@ Route::get('/', function () {
     ]);
 });
 
-Route::middleware([
-    'auth:sanctum',
-    config('jetstream.auth_session'),
-    'verified',
-])->group(function () {
-    Route::get('/tienda', [ShopController::class, 'index'] )->name('shop.index');
+Route::middleware(['auth:sanctum',config('jetstream.auth_session'),'verified',
+])->prefix('tienda')->group(function () {
+    Route::get('/', [ShopController::class, 'index'] )->name('shop.index');
 });
 
 
