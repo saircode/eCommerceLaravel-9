@@ -19,6 +19,7 @@ class ShoppingCartController extends Controller
     {
         $userId = Auth::user()->id;
         $cart = ShoppingCart::where('user_id', $userId)
+        ->select('products.image', 'products.name', 'products.price', 'shopping_carts.*')
         ->join('products', 'products.id', 'shopping_carts.product_id')
         ->latest('shopping_carts.created_at')
         ->get();
@@ -100,8 +101,17 @@ class ShoppingCartController extends Controller
      * @param  \App\Models\ShoppingCart  $shoppingCart
      * @return \Illuminate\Http\Response
      */
-    public function destroy(ShoppingCart $shoppingCart)
+    public function destroy($id)
     {
-        //
+        if($id){
+            $shoppingcart = ShoppingCart::find($id);
+            if(!$shoppingcart) return response( 'no encontrado' , 404) ;
+
+            ShoppingCart::destroy($id);
+        }else{
+            return response( 'falta id del carrito para poder procesar la solicitud', 422);
+        }
+
+        return response (true , 200);
     }
 }
