@@ -34,7 +34,7 @@ Route::middleware(['auth:sanctum',config('jetstream.auth_session'),'verified',
     Route::get('/', [ShopController::class, 'index'] )->name('shop.index');
 });
 
-Route::middleware(['auth:sanctum',config('jetstream.auth_session')])->prefix('productos')
+Route::middleware(['auth:sanctum','userAdmin',config('jetstream.auth_session')])->prefix('productos')
 ->group(function () {
     Route::get('/', [ProductController::class , 'index'])->name('products.index');
     Route::post('/', [ProductController::class , 'store'])->name('products.create');
@@ -57,7 +57,7 @@ Route::middleware(['auth:sanctum',config('jetstream.auth_session'),'verified',
     Route::post('/', [PurchaseController::class, 'store'] )->name('purchase.store');
 });
 
-Route::middleware(['auth:sanctum',config('jetstream.auth_session'),'verified',
+Route::middleware(['auth:sanctum','userAdmin',config('jetstream.auth_session'),'verified',
 ])->prefix('usuarios')->group(function () {
     Route::get('/', [userController::class, 'index'] )->name('users.index');
     Route::post('/', [userController::class, 'store'] )->name('users.create');
