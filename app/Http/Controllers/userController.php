@@ -36,8 +36,13 @@ class userController extends Controller
             return response()->json($validate->errors(), 422);
         }
 
-        $user = new User($request->all());
+        $user = new User( [
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => bcrypt($request->password)
+        ]);
         $user -> save();
+        $user->assignRole('client');
 
         return response (true , 200);
     }
