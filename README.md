@@ -25,3 +25,6 @@
 	`php artisan db:seed`
 	`php artisan serve`
 	`npm run dev`
+
+-- Para probar la pasarela de pagos se pueden probar las siguientes tarjetas de prueba
+	https://docs.wompi.co/docs/colombia/datos-de-prueba-en-sandbox/

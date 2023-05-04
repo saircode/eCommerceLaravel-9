@@ -5,16 +5,19 @@ import SecondaryButton from '@/Components/SecondaryButton.vue';
 import SectionTitle from '@/Components/SectionTitle.vue';
 import Pagination from '@/Components/Pagination.vue';
 import TextInput from '@/Components/TextInput.vue';
+import InputLabel from '@/Components/InputLabel.vue';
 import SvgIcon from '@jamescoyle/vue-icon'
 import { mdiCartVariant } from '@mdi/js'
-import { onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import modal from "@/Components/Modal.vue";
+import { usePage , router } from '@inertiajs/vue3';
+
 
 export default {
     name: 'Shop',
     components: {
         AppLayout,PrimaryButton,SecondaryButton,Pagination,
-        SvgIcon,modal,SectionTitle,TextInput
+        SvgIcon,modal,SectionTitle,TextInput,InputLabel
     },
     props: {
         allProducts: {
@@ -26,14 +29,33 @@ export default {
     setup () {
         onMounted(()=> {
             getCart();
+
+            /**
+             * Cuando WOMPI redirecciona hacia nuestro sitio porque el usuario 
+             * ya ha finalizado su compra... 
+             */
+            const URLactual = new URL(window.location.href);
+            const params = new URLSearchParams(URLactual.search);
+            if (params.get('id')) {
+                verficateTransaction(params.get('id'))
+            }
+
         })
 
         let iconCart = ref(mdiCartVariant),
             userCart = ref([]),
             showModalCart = ref(false),
-            showModalBuys = ref (false),
-            form = reactive({
-                address: ''
+            total = ref(0),
+            showModalShippingInfo = ref(false),
+            wompi = reactive({
+                public_key: usePage().props.wompi.public_key,
+                user: usePage().props.auth.user,
+                legalIdType: 'CC',
+                country: 'CO',
+                address: '',
+                phonenumber: '',
+                city: '',
+                region: ''
             })
 
         async function addToCart(product_id){
@@ -58,7 +80,8 @@ export default {
         async function getCart() {
             await axios.get(route('shoppingcart.index'))
             .then(res=> {
-                userCart.value = res.data;
+                userCart.value = res.data.cart;
+                total.value = res.data.total
             })
         }
 
@@ -78,15 +101,50 @@ export default {
             return COPformat; // "COP 1.234.567,89"
         })
 
-        const openModalBuys = (() =>{
-            showModalCart.value = false
-            showModalBuys.value = true
+        const amountInCents = computed(()=> {
+            return total.value+'00'
         })
+
+
+        const openModalShippingInfo = (()=> {
+            showModalCart.value = false;
+            showModalShippingInfo.value = true;
+        })
+
+        async function verficateTransaction(transactionID) {
+            const url = 'https://sandbox.wompi.co/v1/transactions/' + transactionID;
+
+            fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                const transaction = data.data
+                if(transaction.status === "APPROVED"){
+                    savePurchase(transaction)
+                }else {
+                    router.get(route('shop.index'));
+                }
+            })
+            .catch(error => {
+                console.log(error);
+                router.get(route('shop.index'));
+            });
+        }
+
+        const randReference = (()=>{
+           return Date.now() + Math.floor(Math.random() * 1000001);
+        })
+
+
+        async function savePurchase(transaction) {
+            
+        }
+
 
         return {
             iconCart,addToCart,getCart,userCart,
             productOnCart,showModalCart,formatCoin,RemoveProductCart,
-            openModalBuys,showModalBuys,form
+            total,wompi,amountInCents,openModalShippingInfo,showModalShippingInfo,
+            verficateTransaction,randReference,savePurchase
         }
     }
 }
@@ -136,7 +194,7 @@ export default {
     <modal :show="showModalCart">
         <section-title>
             <template v-slot:title>
-                <p v-text="'Tu carrito'"></p>  
+                <p> Tu carrito <span class="text-green-700">{{ formatCoin(total) }}</span></p>  
             </template>
         </section-title> 
         <div class="py-4">
@@ -169,9 +227,11 @@ export default {
                 </div>
             </div>
 
-            <primary-button  @click="openModalBuys()" :disabled="!userCart.length" class="float-right mr-4 mt-4 mb-4" >
-                Comprar 
+           
+            <primary-button @click="openModalShippingInfo()" :disabled="!userCart.length" class="float-right mr-4 mt-4 mb-4" >
+                Finalizar compra 
             </primary-button>
+            
             <SecondaryButton @click="showModalCart = false" class="float-right mr-4 mt-4 mb-4">
                 Cerrar
             </SecondaryButton>
@@ -179,34 +239,81 @@ export default {
         </div>
     </modal>
 
-    <modal :show="showModalBuys">
+
+    <modal :show="showModalShippingInfo">
         <section-title>
             <template v-slot:title>
-                <p v-text="'Finalizar compra'"></p>  
+                <p> Datos de envio </p>  
             </template>
         </section-title> 
         <div class="py-4">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <div class="relative sm:justify-left sm:items-center  bg-dots-darker">
-                    <label for="">Dirección de envio</label>
-                    <TextInput
-                        v-model="form.address"
-                        type="text"
-                        class=" block w-full"
-                        required
-                        autofocus
-                    />
-                    <!-- <InputError :message="item" v-for="(item,key) in errors.name" :key="key" /> -->
-                </div>
-            </div>
+                <!-- CAMPOS A LLENAR POR EL USUARIO -->
+                <InputLabel value="Dirección" />
+                <TextInput
+                    v-model="wompi.address"
+                    type="text"
+                    class="mt-1 block w-full"
+                    required
+                />
 
-            <primary-button :disabled="!userCart.length" class="float-right mr-4 mt-4 mb-4" >
-                Ir a pagar 
-            </primary-button>
-            <SecondaryButton @click="showModalBuys = false" class="float-right mr-4 mt-4 mb-4">
-                Cerrar
-            </SecondaryButton>
+                <InputLabel value="Departamento" class="mt-2" />
+                <TextInput
+                    v-model="wompi.region"
+                    type="text"
+                    class="mt-1 block w-full"
+                    required
+                />
+
+                <InputLabel value="Ciudad" class="mt-2" />
+                <TextInput
+                    v-model="wompi.city"
+                    type="text"
+                    class="mt-1 block w-full"
+                    required
+                />
+
+                <InputLabel value="Telefono" class="mt-2" />
+                <TextInput
+                    v-model="wompi.phonenumber"
+                    type="text"
+                    class="mt-1 block w-full"
+                    required
+                />
+
+                
+
+                <!-- WOMPI PASARELA -->
+                <form action="https://checkout.wompi.co/p/" method="GET">
+                    <!-- OBLIGATORIOS -->
+                    <input type="hidden" name="public-key" :value="wompi.public_key" />
+                    <input type="hidden" name="currency" value="COP" />
+                    <input type="hidden" name="amount-in-cents" :value="amountInCents" />
+                    <input type="hidden" name="reference" :value="randReference()" />
+                    <!-- OPCIONALES -->
+                    <input type="hidden" name="redirect-url" :value="route('shop.index')" />
+                    <input type="hidden" name="tax-in-cents:vat" value="0" />
+                    <input type="hidden" name="tax-in-cents:consumption" value="0" />
+                    <input type="hidden" name="customer-data:email" :value="wompi.user.email" />
+                    <input type="hidden" name="customer-data:full-name" :value="wompi.user.name" />
             
+
+                    <input type="hidden" name="customer-data:legal-id-type" :value="wompi.legalIdType" />
+                    <input type="hidden" name="shipping-address:address-line-1" :value="wompi.address" />
+                    <input type="hidden" name="shipping-address:country" :value="wompi.country" />
+                    <input type="hidden" name="shipping-address:phone-number" :value="wompi.phonenumber" />
+                    <input type="hidden" name="shipping-address:city" :value="wompi.city" />
+                    <input type="hidden" name="shipping-address:region" :value="wompi.region" />
+                    
+                
+                    <primary-button type="submit" class="float-right mt-4 mb-4" >
+                        Ir a pagar 
+                    </primary-button>
+                    <SecondaryButton @click="showModalShippingInfo = false" class="float-right mr-4 mt-4 mb-4">
+                    Cerrar
+                    </SecondaryButton>
+                </form>
+            </div>
         </div>
     </modal>
 </template>

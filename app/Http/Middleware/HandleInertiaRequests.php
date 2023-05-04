@@ -44,7 +44,12 @@ class HandleInertiaRequests extends Middleware
                     'user'=>$user,
                     'userRol'=> $user->getRoleNames()[0]
                 ] : null;
-            }
+            },
+
+            'wompi'=>  [
+                'public_key'=> config('services.wompi.public_key'),
+                'private_key'=> config('services.wompi.private_key'),
+            ]
         ]);
     }
 }

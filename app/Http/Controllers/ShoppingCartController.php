@@ -6,6 +6,7 @@ use App\Models\ShoppingCart;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class ShoppingCartController extends Controller
@@ -24,7 +25,15 @@ class ShoppingCartController extends Controller
         ->latest('shopping_carts.created_at')
         ->get();
 
-        return response ($cart, 200);
+        $total = 0;
+        foreach ($cart as $key => $p) {
+            $total += $p->price;
+        }
+
+        return response ([
+            'cart'=> $cart,
+            'total'=>$total
+        ], 200);
     }
 
     /**
