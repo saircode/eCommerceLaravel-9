@@ -60,4 +60,9 @@ class User extends Authenticatable
     protected $appends = [
         'profile_photo_url',
     ];
+
+    public function shoppingcarts()
+    {
+        return $this->belongsToMany(ShoppingCart::class);
+    }
 }

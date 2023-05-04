@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ShopController;
+use App\Http\Controllers\ShoppingCartController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -30,20 +32,23 @@ Route::middleware([
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
-    Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard');
-    })->name('dashboard');
+    Route::get('/tienda', [ShopController::class, 'index'] )->name('shop.index');
 });
 
 
 Route::middleware(['auth:sanctum',config('jetstream.auth_session')])->prefix('productos')
-    ->group(function () {
-        Route::get('/', [ProductController::class , 'index'])->name('products.index');
-        Route::post('/', [ProductController::class , 'store'])->name('products.create');
-        Route::post('/img-product', [ProductController::class , 'storeImg'])->name('products.save.image');
-        Route::put('/', [ProductController::class, 'update'])->name("products.update");
-        Route::delete('/{id}', [ProductController::class , 'destroy'])->name('products.delete');
-    });
+->group(function () {
+    Route::get('/', [ProductController::class , 'index'])->name('products.index');
+    Route::post('/', [ProductController::class , 'store'])->name('products.create');
+    Route::post('/img-product', [ProductController::class , 'storeImg'])->name('products.save.image');
+    Route::put('/', [ProductController::class, 'update'])->name("products.update");
+    Route::delete('/{id}', [ProductController::class , 'destroy'])->name('products.delete');
+});
 
-// Route::resource('productos', ProductController::class)
-//     ->middleware(['auth:sanctum',config('jetstream.auth_session')]);
+
+Route::middleware(['auth:sanctum',config('jetstream.auth_session')])->prefix('carrito')
+->group(function () {
+    Route::get('/', [ShoppingCartController::class , 'index'])->name('shoppingcart.index');
+    Route::post('/', [ShoppingCartController::class , 'store'])->name('shoppingcart.add');
+    Route::delete('/{id}', [ShoppingCartController::class , 'destroy'])->name('shoppingcart.delete');
+});

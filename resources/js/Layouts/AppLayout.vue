@@ -41,22 +41,23 @@ const logout = () => {
                         <div class="flex">
                             <!-- Logo -->
                             <div class="shrink-0 flex items-center">
-                                <Link :href="route('dashboard')">
+                                <Link :href="route('shop.index')">
                                     <ApplicationMark class="block h-9 w-auto" />
                                 </Link>
                             </div>
 
                             <!-- Navigation Links -->
                             <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                                <NavLink :href="route('dashboard')" :active="route().current('dashboard')">
-                                    Dashboard
+                                <NavLink :href="route('shop.index')" :active="route().current('shop.index')">
+                                    Tienda
                                 </NavLink>
                             </div>
-                            <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                            <div v-if="$page.props.auth.userRol === 'admin'" class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
                                 <NavLink :href="route('products.index')" :active="route().current('products.index')">
                                     Productos
                                 </NavLink>
                             </div>
+                            
                         </div>
 
                         <div class="hidden sm:flex sm:items-center sm:ml-6">
@@ -196,12 +197,12 @@ const logout = () => {
                 <!-- Responsive Navigation Menu -->
                 <div :class="{'block': showingNavigationDropdown, 'hidden': ! showingNavigationDropdown}" class="sm:hidden">
                     <div class="pt-2 pb-3 space-y-1">
-                        <ResponsiveNavLink :href="route('dashboard')" :active="route().current('dashboard')">
-                            Dashboard
+                        <ResponsiveNavLink :href="route('shop.index')" :active="route().current('shop.index')">
+                            Tienda
                         </ResponsiveNavLink>
                     </div>
 
-                    <div class="pt-2 pb-3 space-y-1">
+                    <div class="pt-2 pb-3 space-y-1" v-if="$page.props.auth.userRol === 'admin'" >
                         <ResponsiveNavLink :href="route('products.index')" :active="route().current('products.index')">
                             Productos
                         </ResponsiveNavLink>
