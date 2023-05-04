@@ -135,8 +135,19 @@ export default {
         })
 
 
+        /**
+         * Solo se puede ir a pagar cuando los datos han sido 
+         * recolectados correctamente
+         */
+        const canGoToPay = computed(()=> {
+            if(!wompi.address || !wompi.region || !wompi.city || !wompi.phonenumber) return false;
+
+            return true;
+        })
+
+
         async function savePurchase(transaction) {
-            
+
         }
 
 
@@ -144,7 +155,7 @@ export default {
             iconCart,addToCart,getCart,userCart,
             productOnCart,showModalCart,formatCoin,RemoveProductCart,
             total,wompi,amountInCents,openModalShippingInfo,showModalShippingInfo,
-            verficateTransaction,randReference,savePurchase
+            verficateTransaction,randReference,savePurchase,canGoToPay
         }
     }
 }
@@ -306,7 +317,7 @@ export default {
                     <input type="hidden" name="shipping-address:region" :value="wompi.region" />
                     
                 
-                    <primary-button type="submit" class="float-right mt-4 mb-4" >
+                    <primary-button :disabled="!canGoToPay" type="submit" class="float-right mt-4 mb-4" >
                         Ir a pagar 
                     </primary-button>
                     <SecondaryButton @click="showModalShippingInfo = false" class="float-right mr-4 mt-4 mb-4">
