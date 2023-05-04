@@ -209,7 +209,7 @@ export default {
                                     Agregar al carrito
                                 </PrimaryButton>
                                 <SecondaryButton>
-                                    Ver mas
+                                    {{ formatCoin(item.price) }}
                                 </SecondaryButton>
                             </div>
                         </div>

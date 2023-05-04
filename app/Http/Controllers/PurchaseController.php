@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Mail;
 
 class PurchaseController extends Controller
 {
@@ -84,8 +85,31 @@ class PurchaseController extends Controller
             }
         }
 
+        self::sendMailNotification($purchase);
 
         return response ( true , 200);
+    }
+
+    static public function sendMailNotification ($purchase) {
+        $purchase->products = DB::table('purchases_products')
+        ->select('products.*')
+        ->join('products' , 'products.id','purchases_products.product_id' )
+        ->where('purchases_products.purchase_id', $purchase->id)
+        ->get();
+        
+        $user = Auth::user();
+        Mail::send('Emails/notificationPurchase', 
+        [
+            "purchase" => $purchase
+        ], 
+        
+        function($message) use ($user){
+            $message
+            ->to($user->email, $user->name)
+            ->subject('Compra exitosa. | eCommerce');
+            $message->from('testecommerce89@gmail.com','eCommerce');
+            // $message->attach(public_path($filePath));
+        });
     }
 
 }
