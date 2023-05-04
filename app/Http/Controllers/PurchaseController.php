@@ -19,7 +19,17 @@ class PurchaseController extends Controller
      */
     public function index()
     {
-        $purchases = purchase::where('user_id' , Auth::user()->id)->latest()->get();
+        $purchases = purchase::where('user_id' , Auth::user()->id)
+            ->latest()
+            ->paginate(25);
+        
+        foreach ($purchases as $key => $item) {
+            $item->products = DB::table('purchases_products')
+                ->select('products.*')
+                ->join('products' , 'products.id','purchases_products.product_id' )
+                ->where('purchases_products.purchase_id', $item->id)
+                ->get();
+        }
 
         return Inertia::render('Purchases', [
             'purchases'=> $purchases
