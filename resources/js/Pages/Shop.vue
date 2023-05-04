@@ -10,7 +10,7 @@ import SvgIcon from '@jamescoyle/vue-icon'
 import { mdiCartVariant } from '@mdi/js'
 import { computed, onMounted, reactive, ref } from 'vue';
 import modal from "@/Components/Modal.vue";
-import { usePage } from '@inertiajs/vue3';
+import { usePage , router } from '@inertiajs/vue3';
 
 
 export default {
@@ -112,10 +112,22 @@ export default {
         })
 
         async function verficateTransaction(transactionID) {
-            await axios.get('https://production.wompi.co/v1/transactions/'+transactionID)
-            .then(res=>{
-                console.log(res.data)
+            const url = 'https://sandbox.wompi.co/v1/transactions/' + transactionID;
+
+            fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                const transaction = data.data
+                if(transaction.status === "APPROVED"){
+                    savePurchase(transaction)
+                }else {
+                    router.get(route('shop.index'));
+                }
             })
+            .catch(error => {
+                console.log(error);
+                router.get(route('shop.index'));
+            });
         }
 
         const randReference = (()=>{
@@ -123,11 +135,16 @@ export default {
         })
 
 
+        async function savePurchase(transaction) {
+            
+        }
+
+
         return {
             iconCart,addToCart,getCart,userCart,
             productOnCart,showModalCart,formatCoin,RemoveProductCart,
             total,wompi,amountInCents,openModalShippingInfo,showModalShippingInfo,
-            verficateTransaction,randReference
+            verficateTransaction,randReference,savePurchase
         }
     }
 }
