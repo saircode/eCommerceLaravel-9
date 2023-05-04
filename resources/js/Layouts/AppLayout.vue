@@ -57,6 +57,16 @@ const logout = () => {
                                     Productos
                                 </NavLink>
                             </div>
+                            <div v-if="$page.props.auth.userRol === 'admin'" class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                                <NavLink :href="route('users.index')" :active="route().current('users.index')">
+                                    Usuarios
+                                </NavLink>
+                            </div>
+                            <div v-if="$page.props.auth.userRol === 'client'" class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                                <NavLink :href="route('purchase.index')" :active="route().current('purchase.index')">
+                                    Mis compras
+                                </NavLink>
+                            </div>
                             
                         </div>
 
@@ -207,6 +217,18 @@ const logout = () => {
                             Productos
                         </ResponsiveNavLink>
                     </div>
+                    <div class="pt-2 pb-3 space-y-1" v-if="$page.props.auth.userRol === 'admin'" >
+                        <ResponsiveNavLink :href="route('users.index')" :active="route().current('users.index')">
+                            Usuarios
+                        </ResponsiveNavLink>
+                    </div>
+                    <div v-if="$page.props.auth.userRol === 'client'" class="pt-2 pb-3 space-y-1">
+                        <ResponsiveNavLink :href="route('purchase.index')" :active="route().current('purchase.index')">
+                            Mis compras
+                        </ResponsiveNavLink>
+                    </div>
+
+                    
 
                     <!-- Responsive Settings Options -->
                     <div class="pt-4 pb-1 border-t border-gray-200">
